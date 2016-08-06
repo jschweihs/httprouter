@@ -42,12 +42,12 @@ import (
     "log"
 )
 
-func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func Index(w http.ResponseWriter, r *http.Request) {
     fmt.Fprint(w, "Welcome!\n")
 }
 
-func Hello(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    fmt.Fprintf(w, "hello, %s!\n", ps.ByName("name"))
+func Hello(w http.ResponseWriter, r *http.Request) {
+    fmt.Fprintf(w, "hello, %s!\n", httprouter.GetParam(r, "name"))
 }
 
 func main() {
@@ -61,8 +61,7 @@ func main() {
 
 ### Named parameters
 
-As you can see, `:name` is a *named parameter*. The values are accessible via `httprouter.Params`, which is just a slice of `httprouter.Param`s. You can get the value of a parameter either by its index in the slice, or by using the `ByName(name)` method: `:name` can be retrived by `ByName("name")`.
-
+As you can see, `:name` is a *named parameter*. The values are accessible via `httprouter.GetParam`, which returns the value of the given key. Additionally you can access the `httprouter.Params` slice through `httprouter.GetParams`, which allows you to access the parameters by index.
 Named parameters only match a single path segment:
 
 ```
@@ -193,13 +192,13 @@ import (
 )
 
 func BasicAuth(h httprouter.Handle, requiredUser, requiredPassword string) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the Basic Authentication credentials
 		user, password, hasAuth := r.BasicAuth()
 
 		if hasAuth && user == requiredUser && password == requiredPassword {
 			// Delegate request to the given handle
-			h(w, r, ps)
+			h(w, r)
 		} else {
 			// Request Basic Authentication otherwise
 			w.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
